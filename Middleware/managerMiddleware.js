@@ -15,7 +15,7 @@ const managerAuth = async (req, res, next) => {
                 if (manager) {
                     next();
                 }else{
-                    console.log('not a user');
+                    console.log('not a manager');
                     return res.status(403).json({message:'Not a Manager'})
                 }
               } catch (error) {

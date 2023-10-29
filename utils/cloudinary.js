@@ -1,10 +1,10 @@
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require("cloudinary").v2;
 
-cloudinary.config({ 
-  cloud_name: process.env.CLOUD_NAME, 
-  api_key: process.env.API_KEY, 
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET,
-  secure: true
+  secure: true,
 });
 
 const uploadToCloudinary = async (path, folder) => {
@@ -22,10 +22,10 @@ const MultiUploadCloudinary = async (files, folder) => {
     const uploadedImages = [];
     for (const file of files) {
       const { path } = file;
-      const result = await uploadToCloudinary(path, folder); 
-      console.log(path,'path');
-      console.log(file,'file');
-      console.log(result,'result');
+      const result = await uploadToCloudinary(path, folder);
+      console.log(path, "path");
+      console.log(file, "file");
+      console.log(result, "result");
 
       if (result.url) {
         uploadedImages.push(result.url);
