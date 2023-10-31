@@ -48,7 +48,7 @@ const managerReg = async (req, res) => {
     let text =
       "<p>Hii" +
       user.name +
-      ', Please click here to <a href="http://localhost:3000/manager/managerverify/' +
+      ', Please click here to <a href="https://frontend-anexo.vercel.app/manager/managerverify/' +
       user._id +
       '"> Verify </a> your mail.</p>';
     sendEmail(email, subject, text);
@@ -100,7 +100,7 @@ const managerLogin = async (req, res) => {
           let text =
             "<p>Hii" +
             exists.name +
-            ', Please click here to <a href="http://localhost:3000/verifyemail/' +
+            ', Please click here to <a href="https://frontend-anexo.vercel.app/manager/managerverify/' +
             exists._id +
             '"> Verify </a> your mail.</p>';
           sendEmail(email, subject, text);
@@ -376,7 +376,7 @@ const confirmBooking = async (req, res) => {
     let text =
       "<p>Congratulations" +
       user.name +
-      ', Your booking has been confirmed by Manager. Please click here to <a href="http://localhost:3000/bookingpayment/' +
+      ', Your booking has been confirmed by Manager. Please click here to <a href="https://frontend-anexo.vercel.app/bookingpayment/' +
       id +
       '"> Pay </a> your Advance.</p>';
     const emailres = sendEmail(email, subject, text);

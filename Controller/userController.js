@@ -50,7 +50,7 @@ const userReg = async (req, res) => {
     let text =
       "<p>Hii" +
       name +
-      ', Please click here to <a href="http://localhost:3000/verifyemail/' +
+      ', Please click here to <a href="https://frontend-anexo.vercel.app/verifyemail/' +
       user._id +
       '"> Verify </a> your mail.</p>';
     sendEmail(email, subject, text);
@@ -102,7 +102,7 @@ const userLogin = async (req, res) => {
           let text =
             "<p>Hii" +
             exists.name +
-            ', Please click here to <a href="http://localhost:3000/verifyemail/' +
+            ', Please click here to <a href="https://frontend-anexo.vercel.app/verifyemail/' +
             exists._id +
             '"> Verify </a> your mail.</p>';
           sendEmail(email, subject, text);
