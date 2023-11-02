@@ -28,7 +28,7 @@ const server = app.listen(4000, () => {
 const io=require('socket.io')(server,{
   pingTimeout:60000,
   cors:{
-    origin:'http://localhost:3000'
+    origin:process.env.ORIGIN
   }
 })
 
@@ -61,9 +61,7 @@ io.on("connection",(socket)=>{
         : newMessageRecieved.sender.manager._id;
   
       if (userKey !== senderUserId) {
-        console.log(user);
         let access = user.user ? user.manager : user.user;
-        console.log(access);
         socket.to(access).emit("message received", newMessageRecieved);
       }
     });

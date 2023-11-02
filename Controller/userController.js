@@ -30,7 +30,6 @@ const generateOtp = () => {
 const userReg = async (req, res) => {
   try {
     const { name, email, password, mob } = req.body;
-    console.log(name, email, password, mob);
     const exists = await User.findOne({ email: email });
     if (exists) {
       return res
@@ -64,19 +63,15 @@ const userReg = async (req, res) => {
 const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password);
 
     const exists = await User.findOne({ email: email, is_block: false });
-    console.log(exists);
 
     if (exists) {
       const access = await bcrypt.compare(password, exists.password);
 
       if (access) {
-        console.log("user logined");
         if (exists.is_verified) {
           let token = await Tokenmodel.findOne({ userId: exists._id });
-          console.log(token);
           if (!token) {
             token = await new Tokenmodel({
               userId: exists._id,
@@ -125,7 +120,6 @@ const userLogin = async (req, res) => {
 
 const userGoogleLogin = async (req, res) => {
   try {
-    console.log("hjfj");
     const { name, email, password } = req.body;
     const exists = await User.findOne({ email: email });
 
@@ -187,14 +181,12 @@ const VerifyEmail = async (req, res) => {
   try {
     const user = req.query.id;
     const userData = await User.findOne({ _id: user });
-    console.log(userData);
     await User.findOneAndUpdate(
       { _id: user },
       { $set: { is_verified: true } },
       { upsert: true }
     );
     let token = await Tokenmodel.findOne({ userId: user });
-    console.log(token);
     if (!token) {
       token = await new Tokenmodel({
         userId: user,
@@ -220,7 +212,6 @@ const VerifyEmail = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    console.log(email);
     const exists = await User.findOne({ email: email });
     if (exists) {
       await Tokenmodel.findOneAndDelete({
@@ -241,7 +232,6 @@ const forgotPassword = async (req, res) => {
       await sendEmail(exists.email, subject, text);
       await tokenmodel.save();
       await exists.save();
-      console.log("returned");
       return res.status(200).json({ message: "Success", status: true });
     }
   } catch (error) {
@@ -253,14 +243,11 @@ const VerifyPassword = async (req, res) => {
   try {
     const { email, otp, password } = req.body;
     const user = await User.findOne({ email: email });
-    console.log(user);
     const token = await Tokenmodel.findOne({ userId: user._id });
-    console.log(token);
     if (otp === token.token) {
       const hash = await bcrypt.hash(password, 10);
       user.password = hash;
       await user.save();
-      console.log();
       await Tokenmodel.findOneAndDelete({ userId: user._id });
       res.status(200).json({ message: "Success", status: true });
     } else {
@@ -274,17 +261,14 @@ const VerifyPassword = async (req, res) => {
 
 const homeData = async (req, res) => {
   try {
-    console.log("new");
     const manager = await Subscription.find({}).populate("managerId");
     const managerDataArray = manager.map(
       (subscription) => subscription.managerId
     );
-    console.log("Array of managerId data:", managerDataArray);
     const homeData = await Manager.find({
       is_authorized: true,
       eventData: { $exists: true, $ne: null },
     });
-    console.log(homeData);
     return res.status(200).json({ homeData: managerDataArray });
   } catch (error) {
     console.log(error.message);
@@ -302,15 +286,14 @@ const getEventData = async (req, res) => {
 const detailData = async (req, res) => {
   try {
     const id = req.query.id;
-    console.log(id);
     const detailData = await Manager.findById(id);
-    console.log(detailData);
     const reviewData = await Review.find({ manager: id }).populate(
       "user",
       "name"
     );
+
     const result = detailData.eventData;
-    return res.status(200).json({ result, review: reviewData });
+    return res.status(200).json({ result, rating:detailData.rating, review: reviewData });
   } catch (error) {
     console.log(error.message);
   }
@@ -320,7 +303,6 @@ const eventList = async (req, res) => {
   try {
     const name = req.query.name;
     const page = req.query.page;
-    console.log(page, "page");
     const start = (page - 1) * 2;
     const end = start + 2;
     const managers = await Manager.find({ "eventData.events": name })
@@ -334,9 +316,7 @@ const eventList = async (req, res) => {
 
 const managerData = async (req, res) => {
   try {
-    console.log("reached");
     const id = req.params.id;
-    console.log(id);
     const manager = await Manager.findById(id);
     console.log(manager);
     return res.status(200).json({ data: manager, status: true });
@@ -347,7 +327,6 @@ const managerData = async (req, res) => {
 
 const submitBooking = async (req, res) => {
   try {
-    console.log(req.body);
     const data = req.body.eventdata;
     const dates = data.date.map((dateString) => new Date(dateString));
     const booking = new Booking({
@@ -364,9 +343,7 @@ const submitBooking = async (req, res) => {
       additional_data: data.additional_data,
     });
     const user = await User.findById(data.user_id);
-    console.log(booking);
     const bookingdata = await booking.save();
-    console.log(req.body);
     return res
       .status(200)
       .json({
@@ -398,7 +375,6 @@ const paymentBookingData = async (req, res) => {
         enabled: true,
       },
     });
-    console.log(paymentIntent);
     res.status(200).json({
       clientSecret: paymentIntent.client_secret,
       amount: price,
@@ -410,9 +386,7 @@ const paymentBookingData = async (req, res) => {
 
 const paymentBookingSuccess = async (req, res) => {
   try {
-    console.log("reached");
     const { id } = req.params;
-    console.log(id);
     await Booking.findByIdAndUpdate(
       id,
       { $set: { is_paid: "paid" } },
@@ -452,7 +426,6 @@ const userPayment = async (req, res) => {
         enabled: true,
       },
     });
-    console.log(paymentIntent, "pay");
     res.status(200).json({
       clientSecret: paymentIntent.client_secret,
     });
@@ -463,7 +436,6 @@ const userPayment = async (req, res) => {
 
 const paymentSuccess = async (req, res) => {
   try {
-    console.log("fgfg");
     const { id } = req.params;
 
     const user = await User.findByIdAndUpdate(
@@ -482,26 +454,6 @@ const paymentSuccess = async (req, res) => {
       amount: 500,
       status: true,
     }).save();
-    console.log(user);
-    // const bookingdata=await Booking.findByIdAndUpdate(id,{$set:{is_paid:'paid'}},{new:true,upsert:true})
-    // const managerdata=await Manager.findById(mangId)
-    // const price=managerdata.eventData.advance_amount
-    // console.log(price);
-    // const data=await Manager.findOne({_id:mangId})
-    // console.log(data);
-    // const updatedDocument = await User.findOneAndUpdate(
-    //     { is_admin: true },
-    //     { $inc: { wallet_amount: price } },
-    //     { new: true, upsert: true }
-    //   );
-    //   const paymentdata= new Payment({
-    //     userId:bookingdata.user_id,
-    //     managerId:mangId,
-    //     bookingId:id,
-    //     amount:price,
-    //     status:'paid'
-    //   })
-    //   await paymentdata.save()
     res.status(200).json({ status: true });
   } catch (error) {
     console.log(error.message);
@@ -513,7 +465,6 @@ const paymentHistory = async (req, res) => {
     const { id } = req.params;
     const data = await Payment.find({ userId: id }).sort({ paidAt: -1 });
     const user = await User.findOne({ _id: id });
-    console.log(data);
     return res.status(200).json({ data, user });
   } catch (error) {
     console.log(error.message);
@@ -525,9 +476,7 @@ const orderHistory = async (req, res) => {
     const { id, num } = req.params;
     const start = (num - 1) * 2;
     const end = start + 2;
-    console.log(id);
     const data = await Booking.find({ user_id: id }).skip(start).limit(end);
-    console.log(data, num, "num");
     res.status(200).json({ data: data });
   } catch (error) {
     console.log(error.message);
@@ -537,10 +486,8 @@ const orderHistory = async (req, res) => {
 const cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id);
     const data = await Booking.findById(id);
     await Booking.findByIdAndUpdate(id, { $set: { is_paid: "cancelled" } });
-    console.log(data.advance_amount, "amt");
     let ans = await User.findByIdAndUpdate(
       data.user_id,
       { $inc: { wallet_amount: data.advance_amount } },
@@ -556,8 +503,6 @@ const cancelOrder = async (req, res) => {
       amount: data.advance_amount,
       status: false,
     }).save();
-    console.log(ans);
-    console.log(admin);
     res.status(200).json({ status: true });
   } catch (error) {
     console.log(error.message);
@@ -567,7 +512,6 @@ const cancelOrder = async (req, res) => {
 const userData = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id);
     const user = await User.findById(id);
     return res.status(200).json({ user: user });
   } catch (error) {
@@ -578,8 +522,6 @@ const userData = async (req, res) => {
 const editPhoto = async (req, res) => {
   try {
     const { id } = req.body;
-    console.log("reasd");
-    console.log(req.file);
     const cloudinarydata = await uploadToCloudinary(req.file.path, "profile");
     await User.findByIdAndUpdate(id, {
       $set: { profile_img: cloudinarydata.url },
@@ -591,12 +533,9 @@ const editPhoto = async (req, res) => {
 };
 
 const accessChat = async (req, res) => {
-  console.log("hgjfg");
   const { userId, mangId } = req.body;
-  console.log(userId, mangId);
 
   if (!userId) {
-    console.log("User not found");
     return res.status(400);
   }
 
@@ -609,10 +548,8 @@ const accessChat = async (req, res) => {
       .populate("users.user", "-password") // Populate the "user" references
       .populate("users.manager", "-password") // Populate the "manager" references
       .populate("latestMessage");
-    console.log(isChat);
     // If a chat exists, send it
     if (isChat) {
-      console.log(isChat);
       res.status(200).json(isChat);
     } else {
       // If a chat doesn't exist, create a new one
@@ -625,7 +562,6 @@ const accessChat = async (req, res) => {
       };
 
       const createdChat = await Chat.create(chatData);
-      console.log(createdChat);
 
       // Populate the "users" field in the created chat
 
@@ -640,7 +576,6 @@ const accessChat = async (req, res) => {
             select: "-password",
           },
         });
-      console.log(FullChat, "full");
       res.status(200).json(FullChat);
     }
   } catch (error) {
@@ -649,7 +584,6 @@ const accessChat = async (req, res) => {
 };
 const fetchChats = async (req, res) => {
   try {
-    console.log("reached");
     const { userId } = req.params;
     const result = await Chat.find({ "users.user": userId })
       .populate("users.user", "-password")
@@ -678,7 +612,6 @@ const fetchChats = async (req, res) => {
 };
 
 const searchUsers = async (req, res) => {
-  console.log("reached");
   const keyword = req.query.search
     ? {
         $or: [
@@ -687,7 +620,6 @@ const searchUsers = async (req, res) => {
         ],
       }
     : {};
-  console.log(keyword);
 
   const users = await Manager.find(keyword); //.find({ _id: { $ne: req.user._id } });
   console.log(users);
@@ -701,9 +633,7 @@ const submitReview = async (req, res) => {
       user_id: userId,
       manager_id: managId,
     });
-    console.log(data);
     if (data) {
-      console.log(req.body);
       await new Review({
         user: userId,
         starcount: rating,
@@ -743,9 +673,7 @@ const submitReport = async (req, res) => {
       user_id: userId,
       manager_id: managId,
     });
-    console.log(data);
     if (data) {
-      console.log(req.body);
       await new Report({
         content: report,
         manager: managId,
@@ -772,7 +700,6 @@ const bannerData = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    console.log(req.body.name, "body");
     const mob = parseInt(req.body.mob, 10);
 
     let data = req.body;
@@ -787,7 +714,6 @@ const updateUser = async (req, res) => {
       }
     );
     let user = await User.findOne({ _id: req.body.id });
-    console.log(user);
     return res.status(200).json({ status: true, user: user });
   } catch (error) {
     console.log(error.message);
@@ -796,7 +722,6 @@ const updateUser = async (req, res) => {
 
 const searchEvent = async (req, res) => {
   try {
-    console.log("reached");
     const keyword = req.query.search
       ? { "eventData.team_name": { $regex: req.query.search, $options: "i" } }
       : {};
@@ -804,7 +729,6 @@ const searchEvent = async (req, res) => {
     const managers = await Manager.find({
       $and: [{ "eventData.events": req.query.name }, keyword],
     });
-    console.log(managers);
     return res.status(200).json({ managers });
   } catch (error) {
     console.log(error.message);

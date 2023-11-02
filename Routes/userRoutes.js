@@ -70,7 +70,7 @@ userRouter.get(
 );
 
 userRouter.get(routeObj.payment, userAuth, userController.userPayment);
-userRouter.post(
+userRouter.get(
   routeObj.paymentsuccess,
   userAuth,
   userController.paymentSuccess

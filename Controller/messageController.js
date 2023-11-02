@@ -6,10 +6,8 @@ const sendMessage = async (req, res) => {
   try {
     const { content, chatId, userId } = req.body;
     if (!content || !chatId) {
-      console.log("Invalid parameters");
       return res.status(400);
     }
-    console.log(userId);
     const newMessage = {
       sender: { user: userId },
       content: content,
@@ -28,7 +26,6 @@ const sendMessage = async (req, res) => {
       },
     ]);
 
-    console.log(message, "message");
 
     let data = await Chat.findByIdAndUpdate(
       chatId,
@@ -37,7 +34,6 @@ const sendMessage = async (req, res) => {
       },
       { new: true }
     );
-    console.log(data);
 
     res.json(message);
   } catch (error) {
@@ -49,10 +45,8 @@ const managerMessage = async (req, res) => {
   try {
     const { content, chatId, userId } = req.body;
     if (!content || !chatId) {
-      console.log("Invalid parameters");
       return res.status(400);
     }
-    console.log(userId);
     const newMessage = {
       sender: { manager: userId },
       content: content,
@@ -71,7 +65,6 @@ const managerMessage = async (req, res) => {
       },
     ]);
 
-    console.log(message, "message");
 
     let data = await Chat.findByIdAndUpdate(
       chatId,
@@ -80,7 +73,6 @@ const managerMessage = async (req, res) => {
       },
       { new: true }
     );
-    console.log(data);
 
     res.json(message);
   } catch (error) {

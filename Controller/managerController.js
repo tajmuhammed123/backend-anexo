@@ -27,9 +27,7 @@ const managerReg = async (req, res) => {
         .status(400)
         .json({ status: false, message: "Email already in used" });
     }
-    console.log(password);
     const hash = await bcrypt.hash(password, 10);
-    console.log(hash);
     const newUser = new Manager({
       name,
       email,
@@ -64,21 +62,16 @@ const managerReg = async (req, res) => {
 const managerLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password);
 
     const exists = await Manager.findOne({ email: email });
-    console.log(exists);
 
     if (exists) {
       const access = await bcrypt.compare(password, exists.password);
 
       if (access) {
-        console.log("user logined");
         if (exists.is_verified) {
           let token = await Tokenmodel.findOne({ userId: exists._id });
-          console.log(token);
           if (!token) {
-            console.log("hjkgh");
             token = await new Tokenmodel({
               userId: exists._id,
               token: jwt.sign(
@@ -124,7 +117,6 @@ const managerLogin = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    console.log(email);
     const exists = await Manager.findOne({ email: email });
     if (exists) {
       await Tokenmodel.findOneAndDelete({
@@ -145,7 +137,6 @@ const forgotPassword = async (req, res) => {
       await sendEmail(exists.email, subject, text);
       await tokenmodel.save();
       await exists.save();
-      console.log("returned");
       return res.status(200).json({ message: "Success", status: true });
     }
   } catch (error) {
@@ -157,14 +148,11 @@ const VerifyPassword = async (req, res) => {
   try {
     const { email, otp, password } = req.body;
     const manager = await Manager.findOne({ email: email });
-    console.log(manager);
     const token = await Tokenmodel.findOne({ userId: manager._id });
-    console.log(token);
     if (otp === token.token) {
       const hash = await bcrypt.hash(password, 10);
       manager.password = hash;
       await manager.save();
-      console.log();
       await Tokenmodel.findOneAndDelete({ userId: manager._id });
       res.status(200).json({ message: "Success", status: true });
     } else {
@@ -178,11 +166,8 @@ const VerifyPassword = async (req, res) => {
 
 const updateMananger = async (req, res) => {
   try {
-    console.log("fdgf");
 
     const mob = parseInt(req.body.mob, 10);
-
-    console.log(req.body, "body");
     let data = req.body;
 
     await Manager.findOneAndUpdate(
@@ -196,7 +181,6 @@ const updateMananger = async (req, res) => {
       { upsert: true }
     );
     let user = await Manager.findOne({ _id: req.body.id });
-    console.log(user);
     return res.status(200).json({ status: true, user });
   } catch (error) {
     console.log(error.message);
@@ -208,38 +192,29 @@ const getEventData = async (req, res) => {
     const { id } = req.params;
     const eventData = await Events.find({ is_block: false });
     const managerData = await Manager.findById(id);
-    console.log(eventData);
     return res.status(200).json({ eventData, managerData });
   } catch (error) {}
 };
 
 const eventData = async (req, res) => {
   try {
-    console.log(req.body);
-    console.log(req.files, "images");
-    console.log(req.files, "data");
     const multipleImages = req.files.filter((file) =>
       file.fieldname.startsWith("eventdata[profileImage]")
     );
-    console.log("Multiple Images:", multipleImages);
 
     const Imagefilenames = multipleImages.map((file) => file.filename);
-    console.log("Image Filenames:", Imagefilenames);
     const cloudinarymultipledata = await MultiUploadCloudinary(
       multipleImages,
       "images"
     );
-    console.log("Cloudinary Multiple Data:", cloudinarymultipledata);
 
     const cover_image = req.files.filter(
       (file) => file.fieldname === "eventdata[cover_image]"
     );
-    console.log(cover_image);
     const cloudinarydata = await uploadToCloudinary(
       cover_image[0].path,
       "categorey"
     );
-    console.log(cloudinarydata);
     const { userID } = req.params;
     const exists = await Manager.findById(userID);
     if (exists) {
@@ -253,7 +228,6 @@ const eventData = async (req, res) => {
         advance_amount,
       } = req.body.eventdata;
       const amount = parseInt(advance_amount);
-      console.log(events);
       const newEvent = {
         cover_image: cloudinarydata.url,
         team_name,
@@ -266,14 +240,12 @@ const eventData = async (req, res) => {
         advance_amount: amount,
       };
       if (exists.eventData) {
-        console.log(newEvent);
         await Manager.findOneAndUpdate(
           { _id: exists._id },
           { $set: { eventData: newEvent } },
           { new: true }
         );
       } else {
-        console.log(newEvent);
         exists.eventData = newEvent;
         await exists.save();
       }
@@ -289,7 +261,6 @@ const managerData = async (req, res) => {
     const { id } = req.params;
     const manager = await Manager.findById(id);
     const review = await Review.find({ manager: id }).populate("user");
-    console.log(manager);
     return res
       .status(200)
       .json({ data: manager, status: true, review: review });
@@ -300,17 +271,14 @@ const managerData = async (req, res) => {
 
 const managerVerify = async (req, res) => {
   try {
-    console.log("hjkgh");
     const manager = req.query.id;
     const managerData = await Manager.findOne({ _id: manager });
-    console.log(managerData);
     await Manager.findOneAndUpdate(
       { _id: manager },
       { $set: { is_verified: true } },
       { upsert: true }
     );
     let token = await Tokenmodel.findOne({ userId: manager });
-    console.log(token);
     if (!token) {
       token = await new Tokenmodel({
         userId: manager,
@@ -333,10 +301,8 @@ const managerVerify = async (req, res) => {
 
 const bookingData = async (req, res) => {
   try {
-    console.log("hjhg");
     const { id } = req.params;
     const data = await Booking.find({ manager_id: id }).populate("user_id");
-    console.log(data);
     return res.status(200).json({ data: data, alert: "booking data" });
   } catch (error) {
     console.log(error.message);
@@ -346,7 +312,6 @@ const bookingDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const data = await Booking.findById(id).populate("user_id");
-    console.log(data);
     return res.status(200).json({ data: data, alert: "booking data" });
   } catch (error) {
     console.log(error.message);
@@ -355,10 +320,7 @@ const bookingDetails = async (req, res) => {
 
 const confirmBooking = async (req, res) => {
   try {
-    console.log("hjk");
     const { id, amount } = req.params;
-    console.log(id);
-    console.log(amount);
     const userData = await Booking.findByIdAndUpdate(
       id,
       {
@@ -381,8 +343,6 @@ const confirmBooking = async (req, res) => {
       '"> Pay </a> your Advance.</p>';
     const emailres = sendEmail(email, subject, text);
     if (emailres.error) {
-      console.log("dfgd");
-      console.log(emailres);
     }
     res.status(200).json({ status: true });
   } catch (error) {
@@ -391,7 +351,6 @@ const confirmBooking = async (req, res) => {
 };
 const searchUsers = async (req, res) => {
   try {
-    console.log("reached");
     const keyword = req.query.search
       ? {
           $or: [
@@ -400,10 +359,8 @@ const searchUsers = async (req, res) => {
           ],
         }
       : {};
-    console.log(keyword);
 
-    const users = await User.find(keyword); //.find({ _id: { $ne: req.user._id } });
-    console.log(users);
+    const users = await User.find(keyword); 
     res.status(200).json(users);
   } catch (error) {
     console.log(error.message);
@@ -412,7 +369,6 @@ const searchUsers = async (req, res) => {
 
 const fetchChats = async (req, res) => {
   try {
-    console.log("reached");
     const { userId } = req.params;
     const result = await Chat.find({ "users.manager": userId })
       .populate("users.user", "-password")
@@ -433,7 +389,6 @@ const fetchChats = async (req, res) => {
         },
       });
     result.reverse();
-    console.log(result);
     res.send(result);
   } catch (error) {
     console.log(error.message);
@@ -456,7 +411,6 @@ const editAbout = async (req, res) => {
 const editEvents = async (req, res) => {
   try {
     const { id, eventlist } = req.body;
-    console.log(id, eventlist);
     await Manager.findByIdAndUpdate(
       id,
       { $set: { "eventData.events": eventlist } },
@@ -470,10 +424,8 @@ const editEvents = async (req, res) => {
 
 const editImages = async (req, res) => {
   try {
-    console.log("res");
     console.log(req.body.id, "body console ");
     const img = await MultiUploadCloudinary(req.files, "profile");
-    console.log(img);
     const managerId = req.body.id;
     await Manager.findByIdAndUpdate(managerId, {
       $set: { "eventData.multipleImages": img },
@@ -487,7 +439,6 @@ const editImages = async (req, res) => {
 const userData = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id);
     const user = await Manager.findById(id);
     return res.status(200).json({ user: user });
   } catch (error) {
@@ -498,8 +449,6 @@ const userData = async (req, res) => {
 const editPhoto = async (req, res) => {
   try {
     const { id } = req.body;
-    console.log("reasd");
-    console.log(req.file);
     const cloudinarydata = await uploadToCloudinary(req.file.path, "profile");
     await Manager.findByIdAndUpdate(id, {
       $set: { profile_img: cloudinarydata.url },
@@ -544,7 +493,6 @@ const subscriptionPayment = async (req, res) => {
         enabled: true,
       },
     });
-    console.log(paymentIntent);
     res.status(200).json({
       clientSecret: paymentIntent.client_secret,
       price: price,
@@ -556,7 +504,6 @@ const subscriptionPayment = async (req, res) => {
 
 const subscriptionSuccess = async (req, res) => {
   try {
-    console.log(req.body);
     const { method, id } = req.body;
     let expire = 0;
     if (method == "classic") {
@@ -569,7 +516,6 @@ const subscriptionSuccess = async (req, res) => {
     const subscribe = new Subscription({
       managerId: id,
     });
-    console.log(expire);
 
     subscribe.createdAt.setSeconds(subscribe.createdAt.getSeconds() + expire);
 
@@ -582,7 +528,6 @@ const subscriptionSuccess = async (req, res) => {
 const dashBoardData = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id);
     const notPaid = await Booking.find({
       manager_id: id,
       is_paid: "not paid",
@@ -599,7 +544,6 @@ const dashBoardData = async (req, res) => {
       manager_id: id,
       is_paid: "cancelled",
     }).countDocuments();
-    console.log(notPaid, paid, pending, cancel);
     const bookings = { notPaid, paid, pending, cancel };
     await Payment.find({ managerId: id });
     const endDate = new Date(); // Current date
@@ -649,7 +593,6 @@ const dashBoardData = async (req, res) => {
         },
       },
     ]);
-    console.log(payment);
     return res.status(200).json({ status: true, bookings, payment });
   } catch (error) {
     console.log(error.message);
