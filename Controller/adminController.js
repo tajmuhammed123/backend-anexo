@@ -4,7 +4,7 @@ const Payment = require("../Models/transactionModel");
 const Report = require("../Models/reportModel");
 const Banner = require("../Models/bannerModel");
 const Events = require("../Models/eventsModel");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const Tokenmodel = require("../Models/token.js");

@@ -6,7 +6,7 @@ const Chat = require("../Models/chatModel");
 const Review = require("../Models/reviewModel");
 const Subscription = require("../Models/subscriptionModel");
 const Payment = require("../Models/transactionModel");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const Tokenmodel = require("../Models/token.js");
