@@ -15,7 +15,6 @@ const Tokenmodel = require("../Models/token.js");
 
 const { sendEmail } = require("../utils/email");
 const { default: Stripe } = require("stripe");
-const { useParams } = require("react-router-dom");
 const { uploadToCloudinary } = require("../utils/cloudinary");
 
 const generateOtp = () => {
